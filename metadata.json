@@ -1,0 +1,6 @@
+{
+  "name": "VITA Dental Shade",
+  "description": "Scientific dental shade-matching assistance system and lab report generator using CIEDE2000 and VITA Classical reference standard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
