@@ -5,7 +5,7 @@ import com.example.colorengine.rgb.RgbColor
 import com.example.colorengine.rgb.RgbLinearization
 
 /**
- * Converts Linear RGB to CIE XYZ color space using device-calibrated matrices.
+ * Converts Linear RGB to CIE XYZ using the supplied matrix; the default sRGB matrix is not device calibration.
  */
 object RgbToXyzConverter {
 

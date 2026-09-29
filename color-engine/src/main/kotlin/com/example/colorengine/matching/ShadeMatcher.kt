@@ -46,7 +46,7 @@ object ShadeMatcher {
 
         val perceptibility = when {
             top1.deltaE00 <= PERCEPTIBILITY_THRESHOLD_PT -> "EXCELLENT (ΔE00 ≤ 0.8, Imperceptible)"
-            top1.deltaE00 <= ACCEPTABILITY_THRESHOLD_AT -> "ACCEPTABLE (ΔE00 ≤ 1.8, Clinically Valid)"
+            top1.deltaE00 <= ACCEPTABILITY_THRESHOLD_AT -> "Small numerical difference (not clinically validated)"
             top1.deltaE00 <= MODERATE_THRESHOLD -> "MODERATE (1.8 < ΔE00 ≤ 3.2, Review Suggested)"
             else -> "SUBOPTIMAL (ΔE00 > 3.2, Check Lighting/Isolation)"
         }

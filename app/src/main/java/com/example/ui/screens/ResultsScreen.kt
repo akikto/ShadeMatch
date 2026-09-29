@@ -52,7 +52,12 @@ fun ResultsScreen(
             Icon(Icons.Default.HourglassEmpty, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(12.dp))
             Text("No shade analysis available yet", fontWeight = FontWeight.Bold)
-            Text("Capture or select a tooth image first.", style = MaterialTheme.typography.bodySmall)
+            Text(
+                if (uiState.deviceValidation?.isPreciseAnalysisAllowed != true)
+                    "Precise shade analysis is unavailable until camera calibration and reference data are validated."
+                else "Capture or select a tooth image first.",
+                style = MaterialTheme.typography.bodySmall
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onNavigateBackToCapture) {
                 Text("Go to Capture")
@@ -178,7 +183,7 @@ fun ResultsScreen(
                         )
                     }
 
-                    // Visual Color Comparison Chips (Measured vs Certified Reference)
+                    // Visual Color Comparison Chips (Estimated vs Unverified Dataset)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -295,14 +300,14 @@ fun ResultsScreen(
             }
         }
 
-        // Calibrated CIE L*a*b* & Dispersion
+        // Estimated CIE L*a*b* & Dispersion
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "Calibrated Colorimetric Data (D65 / 2°)",
+                    text = "Estimated Image Color (not clinically validated)",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )

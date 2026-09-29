@@ -20,8 +20,8 @@ import kotlin.math.*
 data class LabReportData(
     val patient: PatientEntity,
     val dentalCase: DentalCaseEntity,
-    val dentistName: String = "Dr. Alexander Wright, DDS",
-    val clinicName: String = "Apex Dental Aesthetics & Prosthodontics",
+    val dentistName: String = "",
+    val clinicName: String = "",
     val primaryShade: ShadeMatchResult,
     val secondShade: ShadeMatchResult?,
     val thirdShade: ShadeMatchResult?,
@@ -135,11 +135,11 @@ object LabReportPdfGenerator {
         paint.color = Color.WHITE
         paint.textSize = 18f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("DENTAL SHADE LABORATORY PRESCRIPTION", 28f, 32f, paint)
+        canvas.drawText("DENTAL SHADE ASSISTANCE REPORT", 28f, 32f, paint)
 
         paint.textSize = 9.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Optical Colorimetry & CIEDE2000 VITA Classical Certification", 28f, 48f, paint)
+        canvas.drawText("VITA Classical dataset: REQUIRES_VALIDATED_DATA", 28f, 48f, paint)
 
         // Clinic Name on Right
         paint.textAlign = Paint.Align.RIGHT
@@ -148,7 +148,7 @@ object LabReportPdfGenerator {
         canvas.drawText(data.clinicName, 567f, 30f, paint)
         paint.textSize = 8.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Clinician: ${data.dentistName}", 567f, 44f, paint)
+        if (data.dentistName.isNotBlank()) canvas.drawText("Clinician: ${data.dentistName}", 567f, 44f, paint)
         paint.textAlign = Paint.Align.LEFT
 
         var y = 78f
@@ -221,7 +221,7 @@ object LabReportPdfGenerator {
             paint.color = Color.rgb(71, 85, 105)
             paint.textSize = 7.5f
             paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-            canvas.drawText("Captured Tooth Photo (Calibrated)", 30f, y + photoHeight + 11f, paint)
+            canvas.drawText("Captured Tooth Photo", 30f, y + photoHeight + 11f, paint)
         } else {
             // Synthetic tooth visualizer with measured enamel color
             paint.color = Color.rgb(248, 250, 252)
@@ -271,7 +271,7 @@ object LabReportPdfGenerator {
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         canvas.drawText("CIEDE2000 ΔE00 = %.2f".format(data.primaryShade.deltaE00), shadeBoxX + 76f, y + 36f, paint)
 
-        val de00Eval = if (data.primaryShade.deltaE00 <= 1.8) "Clinically Valid Match (ΔE00 ≤ 1.8)" else "Acceptable Deviation"
+        val de00Eval = "Numerical comparison only; not clinical validation"
         paint.textSize = 8.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         canvas.drawText(de00Eval, shadeBoxX + 76f, y + 48f, paint)
@@ -339,7 +339,7 @@ object LabReportPdfGenerator {
         paint.color = Color.rgb(15, 23, 42)
         paint.textSize = 9f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("EXACT COLORIMETRIC MEASUREMENTS (D65 / 2° STANDARD)", 38f, y + 16f, paint)
+        canvas.drawText("ESTIMATED IMAGE COLOR (NOT A CLINICAL MEASUREMENT)", 38f, y + 16f, paint)
 
         paint.textSize = 8.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
@@ -386,8 +386,8 @@ object LabReportPdfGenerator {
         canvas.drawText("RANK", 38f, y + 12f, paint)
         canvas.drawText("SHADE", 90f, y + 12f, paint)
         canvas.drawText("CIEDE2000 ΔE00", 155f, y + 12f, paint)
-        canvas.drawText("CERTIFIED REFERENCE LAB", 270f, y + 12f, paint)
-        canvas.drawText("CLINICAL ACCEPTANCE", 435f, y + 12f, paint)
+        canvas.drawText("UNVERIFIED DATASET LAB", 270f, y + 12f, paint)
+        canvas.drawText("INTERPRETATION", 435f, y + 12f, paint)
 
         y += 18f
 
@@ -406,12 +406,7 @@ object LabReportPdfGenerator {
             canvas.drawText("%.2f".format(cand.deltaE00), 155f, y + 12f, paint)
             canvas.drawText("L*: %.1f, a*: %.1f, b*: %.1f".format(cand.referenceLab.l, cand.referenceLab.a, cand.referenceLab.b), 270f, y + 12f, paint)
 
-            val interp = when {
-                cand.deltaE00 <= 0.8 -> "Imperceptible (ΔE ≤ 0.8)"
-                cand.deltaE00 <= 1.8 -> "Clinically Acceptable (ΔE ≤ 1.8)"
-                cand.deltaE00 <= 3.2 -> "Moderately Acceptable"
-                else -> "Noticeable Discrepancy"
-            }
+            val interp = "Not clinically validated"
             canvas.drawText(interp, 435f, y + 12f, paint)
 
             y += 18f
@@ -495,11 +490,11 @@ object LabReportPdfGenerator {
         paint.color = Color.rgb(100, 116, 139)
         paint.textSize = 7.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Clinician Digital Signature & Authorization:", 380f, y + 16f, paint)
+        canvas.drawText("Clinician review (not a signature):", 380f, y + 16f, paint)
         paint.color = Color.rgb(13, 92, 117)
         paint.textSize = 10f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(data.dentistName, 380f, y + 34f, paint)
+        if (data.dentistName.isNotBlank()) canvas.drawText(data.dentistName, 380f, y + 34f, paint)
         paint.color = Color.rgb(71, 85, 105)
         paint.textSize = 7.5f
         canvas.drawText("Date: $readableDate", 380f, y + 48f, paint)
@@ -520,7 +515,7 @@ object LabReportPdfGenerator {
             paint
         )
         canvas.drawText(
-            "VITA Dental Shade System • Non-spectrophotometric optical estimate • CIEDE2000 algorithm",
+            "Unverified VITA Classical coordinates • Image-based estimate • CIEDE2000 algorithm",
             297.5f,
             footY + 18f,
             paint

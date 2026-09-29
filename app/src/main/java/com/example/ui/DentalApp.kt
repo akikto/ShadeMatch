@@ -199,7 +199,7 @@ fun DentalApp(viewModel: DentalViewModel) {
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Segmenting tooth & computing spectral metrics",
+                                    text = "Segmenting tooth & estimating image color",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

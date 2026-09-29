@@ -10,7 +10,7 @@ import kotlin.math.abs
  * 2. Linear RGB -> CIE XYZ (D65 standard illuminant, 2° observer)
  * 3. CIE XYZ -> CIE L*a*b* (CIE 1976 standard)
  * 4. CIE L*a*b* -> CIEDE2000 ΔE00 (Sharma, Wu, Dalal 2005)
- * 5. Deterministic matching and ranking against certified VITA Classical 16-shade standard.
+ * 5. Deterministic matching against unverified illustrative VITA Classical coordinates.
  *
  * Strictly adheres to project requirements:
  * - Deterministic color-science pipeline (no black-box guessing).
@@ -211,7 +211,7 @@ class ColorEngine(
 
         val perceptibilityStatus = when {
             top1.deltaE00 <= ShadeMatcher.PERCEPTIBILITY_THRESHOLD_PT -> "EXCELLENT (ΔE00 ≤ 0.8, Imperceptible)"
-            top1.deltaE00 <= ShadeMatcher.ACCEPTABILITY_THRESHOLD_AT -> "ACCEPTABLE (ΔE00 ≤ 1.8, Clinically Valid)"
+            top1.deltaE00 <= ShadeMatcher.ACCEPTABILITY_THRESHOLD_AT -> "Small numerical difference (not clinically validated)"
             top1.deltaE00 <= ShadeMatcher.MODERATE_THRESHOLD -> "MODERATE (1.8 < ΔE00 ≤ 3.2, Review Suggested)"
             else -> "SUBOPTIMAL (ΔE00 > 3.2, Check Lighting/Isolation)"
         }

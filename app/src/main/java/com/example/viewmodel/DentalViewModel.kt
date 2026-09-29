@@ -111,7 +111,8 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
 
             if (capture != null) {
                 analysis = repository.getAnalysisForCapture(capture.id)
-                if (analysis != null) {
+                if (analysis != null && _uiState.value.deviceValidation?.isPreciseAnalysisAllowed == true &&
+                    VitaClassicalData.REFERENCE_STATUS != "REQUIRES_VALIDATED_DATA") {
                     val overallLab = Lab(analysis.overallL, analysis.overallA, analysis.overallB)
                     val cervicalLab = if (analysis.cervicalL > 0) Lab(analysis.cervicalL, analysis.cervicalA, analysis.cervicalB) else null
                     val middleLab = if (analysis.middleL > 0) Lab(analysis.middleL, analysis.middleA, analysis.middleB) else null
@@ -136,7 +137,7 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
 
                 _uiState.value = _uiState.value.copy(
                     activeCapture = capture,
-                    activeAnalysis = analysis,
+                    activeAnalysis = if (report != null) analysis else null,
                     comprehensiveReport = report,
                     finalShade = finalShade,
                     currentCapturedBitmap = loadedBitmap,
@@ -185,6 +186,18 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
         val currentCase = _uiState.value.activeCase
         if (currentCase == null) {
             _uiState.value = _uiState.value.copy(errorMessage = "Please select or create an active case first.")
+            return
+        }
+        val validation = _uiState.value.deviceValidation
+        if (validation?.isPreciseAnalysisAllowed != true ||
+            VitaClassicalData.REFERENCE_STATUS == "REQUIRES_VALIDATED_DATA") {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                comprehensiveReport = null,
+                activeAnalysis = null,
+                finalShade = null,
+                errorMessage = "Precise shade analysis is unavailable. Camera calibration and VITA reference data require validation."
+            )
             return
         }
 
@@ -338,7 +351,12 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
         }
     }
 
-    fun generateLabPdf(context: Context, dentistName: String = "Dr. Alexander Wright, DDS", clinicName: String = "Apex Dental Aesthetics"): File? {
+    fun generateLabPdf(context: Context, dentistName: String = "", clinicName: String = ""): File? {
+        if (_uiState.value.deviceValidation?.isPreciseAnalysisAllowed != true ||
+            VitaClassicalData.REFERENCE_STATUS == "REQUIRES_VALIDATED_DATA") {
+            _uiState.value = _uiState.value.copy(errorMessage = "A shade report cannot be generated without validated calibration and reference data.")
+            return null
+        }
         val currentCase = _uiState.value.activeCase ?: return null
         val currentPatient = _uiState.value.selectedPatient ?: return null
         val report = _uiState.value.comprehensiveReport ?: return null
@@ -370,10 +388,10 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
             overrideReason = overrideReason,
             overallLab = report.overallLab,
             zones = report.zones,
-            qualityStatus = _uiState.value.qualityEvaluation?.status?.name ?: "PASS",
-            qualityNotes = _uiState.value.qualityEvaluation?.issues?.joinToString("; ") { it.message } ?: "Nominal exposure & blur criteria satisfied",
+            qualityStatus = _uiState.value.qualityEvaluation?.status?.name ?: "NOT_EVALUATED",
+            qualityNotes = _uiState.value.qualityEvaluation?.issues?.joinToString("; ") { it.message } ?: "Quality evaluation unavailable",
             deviceModel = Build.MODEL ?: "Generic Smartphone",
-            cameraId = "Back Sensor (Calibrated)",
+            cameraId = _uiState.value.activeCapture?.cameraId ?: "Unknown camera",
             calibrationProfileId = calibProfile.id,
             algorithmVersion = report.algorithmVersion,
             clinicalPhoto = photoBitmap
@@ -434,6 +452,6 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
     }
 
     private fun buildMetadataString(bitmap: Bitmap): String {
-        return "Model: ${Build.MODEL}, Brand: ${Build.MANUFACTURER}, OS: Android ${Build.VERSION.RELEASE}, Resolution: ${bitmap.width}x${bitmap.height}, WhiteBalance: D65_Calibrated"
+        return "Model: ${Build.MODEL}, Brand: ${Build.MANUFACTURER}, OS: Android ${Build.VERSION.RELEASE}, Resolution: ${bitmap.width}x${bitmap.height}, WhiteBalance: UNKNOWN"
     }
 }

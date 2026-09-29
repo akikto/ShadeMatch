@@ -43,7 +43,7 @@ fun CalibrationInfoScreen(uiState: DentalUiState) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Deterministic CIEDE2000 Pipeline & ISO/TR 28642 References",
+                text = "CIEDE2000 calculations; reference data not validated",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -72,7 +72,7 @@ fun CalibrationInfoScreen(uiState: DentalUiState) {
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = if (isCalibrated) "Validated Profile" else "Standard Uncalibrated",
+                            text = if (isCalibrated) "Validated Profile" else "Analysis unavailable",
                             color = if (isCalibrated) Color(0xFF047857) else Color(0xFFB45309),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
@@ -107,12 +107,12 @@ fun CalibrationInfoScreen(uiState: DentalUiState) {
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "VITA Classical 16-Shade Reference Database",
+                    text = "VITA Classical 16-Shade Dataset",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Certified spectrophotometer baseline coordinates (D65 / 2°)",
+                    text = "REQUIRES_VALIDATED_DATA — coordinates are illustrative only",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

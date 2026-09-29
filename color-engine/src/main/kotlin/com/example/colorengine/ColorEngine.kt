@@ -24,7 +24,7 @@ import com.example.colorengine.xyz.XyzColor
  * 2. RGB -> XYZ (D65, 2° observer)
  * 3. XYZ -> CIELAB (CIE 1976)
  * 4. CIELAB -> CIEDE2000 (Sharma, Wu, Dalal 2005)
- * 5. Matching against certified VITA Classical 16-shade reference standard
+ * 5. Matching against unverified illustrative VITA Classical coordinates
  */
 class ColorEngine(
     val calibrationMatrix: ColorTransformationMatrix = ColorTransformationMatrix.SRGB_TO_XYZ_D65,

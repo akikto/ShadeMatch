@@ -59,7 +59,7 @@ fun PatientsScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "Local offline encrypted records (${uiState.patients.size})",
+                    text = "Local offline records (${uiState.patients.size})",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

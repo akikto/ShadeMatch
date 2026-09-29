@@ -3,13 +3,14 @@ package com.example.colorengine.reference
 import com.example.colorengine.lab.LabColor
 
 /**
- * Certified VITA Classical A1-D4 reference dataset (16 shades).
- * Reference standard: ISO/TR 28642 under standard illuminant D65, 2° observer.
+ * Illustrative VITA Classical A1-D4 coordinates (16 shades).
+ * Provenance and measurement conditions require independent verification.
  */
 object VitaClassicalDataset {
 
     const val SHADE_SYSTEM = "VITA_CLASSICAL"
-    const val REFERENCE_VERSION = "2024.1"
+    const val REFERENCE_VERSION = "UNVERIFIED"
+    const val REFERENCE_STATUS = "REQUIRES_VALIDATED_DATA"
 
     val ALL_16_SHADES: List<VitaClassicalReference> = listOf(
         // Group A: Reddish-Brownish

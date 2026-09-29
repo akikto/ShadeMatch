@@ -3,6 +3,7 @@ package com.example.vision
 import com.example.calibration.CalibrationRegistry
 import com.example.calibration.CalibrationStatus
 import com.example.colorengine.Lab
+import com.example.colorengine.VitaClassicalData
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -27,13 +28,17 @@ class RobustColorExtractorTest {
 
     @Test
     fun testDeviceValidationRegistry() {
-        val pixelResult = CalibrationRegistry.evaluateDevice("Pixel 8 Pro")
-        assertEquals(CalibrationStatus.VALIDATED, pixelResult.status)
-        assertTrue(pixelResult.isPreciseAnalysisAllowed)
-        assertTrue(pixelResult.profile.validated)
+        val pixelResult = CalibrationRegistry.evaluateDevice("Pixel 8")
+        assertFalse("A model name without verified camera configuration is not validation", pixelResult.isPreciseAnalysisAllowed)
+        assertFalse(pixelResult.profile.validated)
 
         val uncalibResult = CalibrationRegistry.evaluateDevice("UnknownBrand XYZ Phone")
         assertEquals(CalibrationStatus.GENERIC_UNCALIBRATED, uncalibResult.status)
         assertFalse(uncalibResult.profile.validated)
+        assertFalse(uncalibResult.isPreciseAnalysisAllowed)
+        assertFalse(CalibrationRegistry.evaluateDevice("Pixel 8", "camera_0_wide").isPreciseAnalysisAllowed)
+        assertFalse(CalibrationRegistry.evaluateDevice("SM-S921", "camera_0_wide").isPreciseAnalysisAllowed)
+        assertEquals("REQUIRES_VALIDATED_DATA", VitaClassicalData.REFERENCE_STATUS)
+        assertEquals(16, VitaClassicalData.ALL_16_SHADES.map { it.shadeCode }.toSet().size)
     }
 }

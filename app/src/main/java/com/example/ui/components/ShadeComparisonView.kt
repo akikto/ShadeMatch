@@ -287,7 +287,7 @@ fun SideBySideView(
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Calibrated Optical Color",
+                        text = "Estimated Image Color",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -663,7 +663,7 @@ fun ColorimetricDeltaBreakdown(
                     symbol = "ΔE00",
                     name = "Overall",
                     value = deltaE00,
-                    note = if (deltaE00 <= 1.8) "Clinically Valid" else "Review advised",
+                    note = "Review advised",
                     isHero = true
                 )
             }

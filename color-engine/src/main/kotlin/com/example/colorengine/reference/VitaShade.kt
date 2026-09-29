@@ -3,7 +3,7 @@ package com.example.colorengine.reference
 import com.example.colorengine.lab.LabColor
 
 /**
- * Represents a standard VITA Classical shade with its certified L*a*b* reference coordinates.
+ * Represents a VITA Classical shade with unverified illustrative L*a*b* coordinates.
  *
  * Properties:
  * - shadeCode: The standard VITA Classical shade designation (e.g. "A1", "A2", "D4").
@@ -20,7 +20,7 @@ data class VitaShade(
     val illuminant: String = "D65",
     val observer: String = "2°",
     val system: String = "VITA_CLASSICAL",
-    val provenance: String = "ISO/TR 28642 standard reference data & peer-reviewed spectrophotometric consensus",
+    val provenance: String = "REQUIRES_VALIDATED_DATA",
     val hueGroup: String = when (shadeCode.firstOrNull()?.uppercaseChar()) {
         'A' -> "Reddish-Brownish"
         'B' -> "Reddish-Yellowish"
@@ -38,7 +38,7 @@ data class VitaShade(
         illuminant: String = "D65",
         observer: String = "2°",
         system: String = "VITA_CLASSICAL",
-        provenance: String = "ISO/TR 28642 standard reference data & peer-reviewed spectrophotometric consensus"
+        provenance: String = "REQUIRES_VALIDATED_DATA"
     ) : this(
         shadeCode = shadeCode,
         lStar = lab.l,
@@ -52,8 +52,7 @@ data class VitaShade(
 
     companion object {
         /**
-         * Certified standardized reference database of all 16 VITA Classical shades.
-         * Coordinates measured under standard CIE illuminant D65, 2° observer.
+         * Illustrative coordinates for the 16 VITA Classical shades; not validated measurements.
          */
         val ALL_16: List<VitaShade> = listOf(
             // Group A: Reddish-Brownish

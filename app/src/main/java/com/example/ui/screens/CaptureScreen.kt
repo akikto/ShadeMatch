@@ -118,7 +118,7 @@ fun CaptureScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (isCalibrated) "Calibrated HW" else "Standard Uncalibrated",
+                            text = if (devValidation?.isPreciseAnalysisAllowed == true) "Validated setup" else "Analysis blocked",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = if (isCalibrated) Color(0xFF047857) else Color(0xFFB45309)
@@ -126,6 +126,15 @@ fun CaptureScreen(
                     }
                 }
             }
+        }
+
+        if (devValidation?.isPreciseAnalysisAllowed != true) {
+            Text(
+                text = "Camera calibration and reference data are not validated. Precise shade analysis is unavailable on this device.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.testTag("analysis_blocked_message")
+            )
         }
 
         // Live Camera or Preview Area

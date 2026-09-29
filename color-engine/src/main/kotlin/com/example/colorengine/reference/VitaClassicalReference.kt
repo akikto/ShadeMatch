@@ -3,20 +3,19 @@ package com.example.colorengine.reference
 import com.example.colorengine.lab.LabColor
 
 /**
- * Standard reference record for a certified VITA Classical shade tab.
- * Contains mandatory scientific provenance and instrumentation metadata.
+ * VITA Classical shade record. Default coordinates have no verified measurement provenance.
  */
 data class VitaClassicalReference(
     val shadeCode: String,
     val lab: LabColor,
     val illuminant: String = "D65",
     val observer: String = "2°",
-    val instrument: String = "Spectrophotometer Konica Minolta CM-3700d / X-Rite Ci7800",
-    val guideId: String = "VITA_CLASSICAL_REF_STD",
-    val referenceVersion: String = "2024.1",
-    val measurementDate: String = "2024-03-15",
-    val source: String = "ISO/TR 28642 standard reference data & peer-reviewed spectrophotometric consensus",
-    val provenance: String = "Certified physical tab measurement under specular excluded D65 geometry",
+    val instrument: String = "UNKNOWN",
+    val guideId: String = "VITA_CLASSICAL_UNVERIFIED",
+    val referenceVersion: String = "UNVERIFIED",
+    val measurementDate: String = "UNKNOWN",
+    val source: String = "REQUIRES_VALIDATED_DATA",
+    val provenance: String = "REQUIRES_VALIDATED_DATA",
     val hueGroup: String = when (shadeCode.first()) {
         'A' -> "Reddish-Brownish"
         'B' -> "Reddish-Yellowish"

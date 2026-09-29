@@ -9,7 +9,7 @@ import kotlin.math.sin
 object DentalImageHelper {
 
     /**
-     * Generates a high-fidelity synthetic clinical dental photograph for testing and calibration.
+     * Generates a synthetic dental illustration for UI testing, not calibration or clinical validation.
      * Features: realistic tooth crown shape, cervical-to-incisal shade gradient, enamel translucency,
      * anatomical gingival margin, and realistic oral cavity background.
      */

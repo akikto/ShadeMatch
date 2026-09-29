@@ -58,7 +58,7 @@ data class DentalShadeComparisonResult(
 /**
  * Implements the CIEDE2000 (ΔE00) total color difference formula specified by the
  * International Commission on Illumination (CIE) and ISO/CIE 11664-6:2014, tailored
- * for comparing captured tooth colorimetry against certified VITA Classical reference standards.
+ * for comparing estimated image color against unverified VITA Classical coordinates.
  *
  * Mathematical Reference:
  * Gaurav Sharma, Wencheng Wu, Edul N. Dalal,
@@ -247,7 +247,7 @@ class Ciede2000ColorDifference(
     }
 
     /**
-     * Ranks all 16 certified VITA Classical reference shades (A1-A4, B1-B4, C1-C4, D2-D4)
+     * Ranks all 16 illustrative VITA Classical shades (A1-A4, B1-B4, C1-C4, D2-D4)
      * against the captured tooth color, ordered ascending by CIEDE2000 color difference (ΔE00).
      *
      * @param capturedLab Measured dental CIE L*a*b* coordinates.

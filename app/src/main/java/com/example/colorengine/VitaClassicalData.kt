@@ -1,22 +1,20 @@
 package com.example.colorengine
 
 /**
- * Standard reference data for VITA Classical A1-D4 shades.
- * Provenance: ISO/TR 28642 dental materials colorimetry guidelines &
- * published spectrophotometric reference datasets (Paravina et al., Hassel et al., O'Brien et al.)
- * under standard D65 illuminant and 2° observer.
+ * Illustrative VITA Classical A1-D4 coordinates. Measurement provenance has not
+ * been verified; these values must not be used for clinical shade selection.
  */
 data class VitaReference(
     val shadeCode: String,
     val lab: Lab,
     val illuminant: String = "D65",
     val observer: String = "2°",
-    val instrument: String = "Benchtop Spectrophotometer CM-3700d / Ci7800",
-    val guideId: String = "VITA_CLASSICAL_REF_STD",
-    val referenceVersion: String = "2024.1",
-    val measurementDate: String = "2024-03-15",
-    val source: String = "ISO/TR 28642 & peer-reviewed spectrophotometric consensus",
-    val provenance: String = "Certified physical tab measurement under specular excluded D65 geometry",
+    val instrument: String = "UNKNOWN",
+    val guideId: String = "VITA_CLASSICAL_UNVERIFIED",
+    val referenceVersion: String = "UNVERIFIED",
+    val measurementDate: String = "UNKNOWN",
+    val source: String = "REQUIRES_VALIDATED_DATA",
+    val provenance: String = "REQUIRES_VALIDATED_DATA",
     val hueGroup: String = when (shadeCode.first()) {
         'A' -> "Reddish-Brownish"
         'B' -> "Reddish-Yellowish"
@@ -29,6 +27,7 @@ data class VitaReference(
 object VitaClassicalData {
 
     const val SHADE_SYSTEM = "VITA_CLASSICAL"
+    const val REFERENCE_STATUS = "REQUIRES_VALIDATED_DATA"
     const val ALGORITHM_VERSION = "v1.4.2-CIEDE2000"
 
     val ALL_16_SHADES: List<VitaReference> = listOf(

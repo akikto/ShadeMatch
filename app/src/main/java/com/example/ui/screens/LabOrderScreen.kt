@@ -67,7 +67,7 @@ fun LabOrderScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "VITA Classical Shade Certification PDF for Dental Lab",
+                    text = "Dental Shade Assistance Report for Dental Lab",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

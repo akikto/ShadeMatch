@@ -1,0 +1,1201 @@
+DENTASHADE — CURSOR AGENT FIX & CONTINUE PROMPT
+================================================
+
+IMPORTANT:
+This is NOT a request to start a new project.
+
+You are continuing the existing DentaShade codebase that I provided in the ZIP.
+
+Your job is to:
+1. Inspect the existing implementation.
+2. Preserve good existing work.
+3. Fix scientific/architecture/production-safety problems.
+4. Complete missing MVP requirements.
+5. Do not rewrite working modules unnecessarily.
+6. Do not invent clinical/reference data.
+7. Work phase-by-phase and run tests after every phase.
+
+
+================================================
+1. PRODUCT
+================================================
+
+App name:
+
+DentaShade
+
+Purpose:
+
+A mobile dental shade-assistance application.
+
+The app photographs a patient's tooth using a smartphone camera, processes the image through a controlled color-science pipeline, compares the measured tooth color against VITA Classical A1–D4 reference data, presents the closest candidates, allows dentist confirmation/override, and generates a dental laboratory report PDF.
+
+Platforms:
+
+- Android
+- iPhone/iOS
+
+IMPORTANT:
+
+This is a SHADE-ASSISTANCE system.
+
+Do NOT claim:
+
+- spectrophotometer equivalence
+- clinical validation unless actually completed
+- certified clinical accuracy
+- fake confidence percentages
+- unsupported VITA reference accuracy
+
+
+================================================
+2. EXISTING PROJECT
+================================================
+
+You are working on the existing ZIP/project.
+
+DO NOT throw away the existing implementation.
+
+First inspect:
+
+- complete directory structure
+- Gradle/build files
+- Kotlin files
+- Compose UI
+- CameraX implementation
+- color-engine
+- database
+- calibration
+- segmentation
+- PDF generation
+- tests
+- README
+- configuration files
+
+Create an internal dependency/architecture map before making major changes.
+
+
+================================================
+3. CURRENT FOUNDATION TO PRESERVE
+================================================
+
+The existing project already contains useful foundations including:
+
+- Android application
+- Jetpack Compose
+- CameraX
+- Room/local database
+- CIELAB conversion
+- CIEDE2000
+- VITA Classical 16-shade structure
+- tooth segmentation foundation
+- image quality checking
+- robust color extraction
+- shade ranking
+- dentist override
+- laboratory PDF generation
+- calibration model
+
+Preserve these where technically sound.
+
+Improve them rather than replacing them without reason.
+
+
+================================================
+4. CRITICAL RULE — DO NOT INVENT DATA
+================================================
+
+The current code contains VITA shade Lab values.
+
+Treat those values as NON-VALIDATED until their provenance is explicitly documented and verified.
+
+DO NOT describe them as:
+
+- certified
+- clinical reference
+- certified physical tab measurement
+- validated VITA reference
+
+unless the repository contains legitimate provenance supporting that claim.
+
+If validated reference data is not available:
+
+mark the data status as:
+
+REQUIRES_VALIDATED_DATA
+
+and design the application so that the data can be replaced later without changing the matching engine.
+
+
+================================================
+5. VITA CLASSICAL ONLY
+================================================
+
+The supported shade system for MVP is:
+
+VITA_CLASSICAL
+
+with exactly:
+
+A1
+A2
+A3
+A3.5
+A4
+B1
+B2
+B3
+B4
+C1
+C2
+C3
+C4
+D2
+D3
+D4
+
+Do NOT mix:
+
+- VITA 3D-MASTER
+- Bleachedguide
+- other shade systems
+
+The shade-system identifier must remain explicit in the database and analysis pipeline.
+
+
+================================================
+6. CRITICAL CALIBRATION FIX
+================================================
+
+Inspect the current CalibrationRegistry and all calibration-related code.
+
+The existing implementation contains device profiles and a generic/un-calibrated profile.
+
+DO NOT allow an unvalidated profile to produce a precise clinical-looking shade result.
+
+Specifically:
+
+GENERIC_UNCALIBRATED
+
+must NOT allow:
+
+isPreciseAnalysisAllowed = true
+
+Change the architecture so that:
+
+UNVALIDATED / GENERIC DEVICE
+→ precise shade analysis BLOCKED
+
+The UI must clearly explain why.
+
+Example:
+
+"Camera calibration is not validated for this device. Precise shade analysis is unavailable."
+
+Do not silently fall back to a generic calibration matrix.
+
+
+================================================
+7. DEVICE VALIDATION
+================================================
+
+Create a proper device/camera validation gate.
+
+Each device profile must contain at minimum:
+
+- deviceModel
+- cameraId
+- lens information where available
+- calibrationProfileId
+- validationStatus
+- validationDate
+- algorithmVersion
+- referenceTarget
+- notes
+
+Use explicit states:
+
+VALIDATED
+UNVALIDATED
+UNSUPPORTED
+EXPIRED
+
+Only VALIDATED profiles may perform precise shade analysis.
+
+UNVALIDATED / UNSUPPORTED / EXPIRED:
+
+→ block precise analysis.
+
+Do not pretend that a phone is calibrated merely because its model is listed in code.
+
+
+================================================
+8. REMOVE FALSE CERTIFICATION LANGUAGE
+================================================
+
+Search the entire repository for terms such as:
+
+- certified
+- certification
+- certified reference
+- certified physical tab
+- optical colorimetry certification
+- clinical accuracy
+- clinically validated
+- spectrophotometer equivalent
+- spectrophotometer accuracy
+
+Review every occurrence.
+
+If the claim is not supported by actual validation evidence in the repository:
+
+replace it with scientifically neutral language.
+
+Examples:
+
+Instead of:
+
+"Certified reference"
+
+use:
+
+"Reference dataset"
+
+Instead of:
+
+"VITA Classical Certification"
+
+use:
+
+"VITA Classical shade assistance"
+
+Instead of:
+
+"Certified physical tab measurement"
+
+use:
+
+"Reference measurement — provenance required"
+
+Do NOT remove useful technical information.
+
+
+================================================
+9. PDF TERMINOLOGY FIX
+================================================
+
+Inspect the PDF generator.
+
+Remove hard-coded claims such as:
+
+"Optical Colorimetry & CIEDE2000 VITA Classical Certification"
+
+Replace with:
+
+"Dental Shade Assistance Report"
+
+or equivalent neutral wording.
+
+The PDF must NOT imply that the application or shade result is clinically certified.
+
+Keep the disclaimer:
+
+"Digital shade-assistance information only. Final clinical shade selection remains the responsibility of the dentist."
+
+
+================================================
+10. REMOVE HARDCODED DENTIST DATA
+================================================
+
+Search for hard-coded demo dentist/clinic information.
+
+For example, if any demo information such as:
+
+"Dr. Alexander Wright, DDS"
+"Apex Dental Aesthetics"
+
+exists, remove it from production output.
+
+Create dentist/clinic settings or configuration.
+
+PDF should obtain:
+
+- dentist name
+- clinic name
+- clinic contact information
+
+from app settings/profile.
+
+If profile information is not available, display neutral placeholders or omit the field.
+
+Never ship fake dentist information in production.
+
+
+================================================
+11. CAMERA SYSTEM — IMPROVE EXISTING IMPLEMENTATION
+================================================
+
+Keep CameraX if it is working.
+
+Improve the camera capture pipeline.
+
+Where Android camera APIs permit:
+
+- focus control
+- exposure control
+- white-balance control
+- exposure compensation
+- ISO metadata
+- shutter metadata
+- lens/camera ID
+- resolution
+- zoom
+- timestamp
+- device model
+- Android version
+- app version
+- RAW capability if available
+
+Record actual metadata.
+
+Do NOT invent values.
+
+If a control is unavailable on a particular device:
+
+record:
+
+UNAVAILABLE
+
+rather than creating fake values.
+
+
+================================================
+12. IMAGE PROCESSING
+================================================
+
+The desired pipeline is:
+
+RAW/linear RGB
+→ black-level correction where available
+→ linearization
+→ lens/vignetting correction where available
+→ reference/white correction
+→ camera RGB → XYZ
+→ XYZ → CIELAB
+→ CIEDE2000
+→ shade ranking
+
+
+Do NOT silently use an uncontrolled JPEG RGB value as if it were calibrated color.
+
+If the device cannot support the required validated workflow:
+
+show a clear limitation and block precise analysis where required.
+
+
+================================================
+13. CAMERA IMAGE ENHANCEMENT
+================================================
+
+Inspect the capture pipeline for:
+
+- HDR
+- beauty filters
+- portrait mode
+- night mode
+- scene optimizer
+- automatic color enhancement
+- undocumented image enhancement
+
+Disable or avoid these where APIs permit.
+
+If the platform applies unavoidable processing:
+
+document it in the device profile/validation status.
+
+Do not claim colorimetric validity without validation.
+
+
+================================================
+14. IMAGE QUALITY GATE
+================================================
+
+Strengthen the existing image quality system.
+
+It must evaluate:
+
+- blur
+- motion
+- underexposure
+- overexposure
+- excessive glare
+- specular reflection
+- tooth area
+- framing
+- color cast
+- shadow
+- obstruction
+- missing reference
+- invalid reference
+- unsupported camera
+
+Return:
+
+PASS
+WARNING
+FAIL
+
+with machine-readable reason codes.
+
+Critical failures must block precise analysis.
+
+
+================================================
+15. TOOTH SEGMENTATION
+================================================
+
+Preserve the existing ToothSegmenter foundation.
+
+Improve architecture toward:
+
+hybrid classical CV + lightweight segmentation model.
+
+The system should eventually support:
+
+toothMask
+gingivaMask
+lipMask
+reflectionMask
+shadeTabMask
+artifactMask
+
+At minimum, the current implementation must not include:
+
+- gingiva
+- lips
+- obvious saliva highlights
+- specular highlights
+- dark interproximal areas
+- obvious artifacts
+- shadows
+
+in the primary tooth color calculation.
+
+
+================================================
+16. COLOR EXTRACTION
+================================================
+
+Use robust statistics.
+
+Do NOT use simple full-region average RGB.
+
+Preferred output:
+
+median L*
+median a*
+median b*
+MAD
+usablePixelCount
+validPixelRatio
+
+Optionally support:
+
+cervical
+middle
+incisal
+
+zones.
+
+Store each zone independently.
+
+
+================================================
+17. CIEDE2000
+================================================
+
+Preserve the existing CIEDE2000 implementation if tests confirm it is correct.
+
+Create/reference unit tests against known mathematical examples.
+
+The shade matching algorithm must:
+
+1. obtain measured tooth Lab
+2. load validated/reference VITA Lab
+3. calculate ΔE00 for all 16 shades
+4. sort ascending
+5. return top 3
+
+Output:
+
+rank
+shadeCode
+deltaE00
+
+
+================================================
+18. AMBIGUITY
+================================================
+
+Do not force a shade when candidates are too close.
+
+If top candidates are close:
+
+show:
+
+"Close shade candidates detected. Clinical review recommended."
+
+Also show measurement quality.
+
+If color dispersion is too high:
+
+show:
+
+"Color measurement variation is high. Retake the photograph."
+
+If calibration fails:
+
+do not show a precise shade.
+
+
+================================================
+19. VITA REFERENCE DATA ARCHITECTURE
+================================================
+
+Make reference data replaceable and versioned.
+
+Recommended fields:
+
+id
+system
+shadeCode
+LStar
+aStar
+bStar
+illuminant
+observer
+instrument
+guideId
+referenceVersion
+measurementDate
+source
+provenance
+validationStatus
+
+Validation status:
+
+VALIDATED
+UNVALIDATED
+REQUIRES_VALIDATED_DATA
+
+Do not hard-wire scientific claims into UI.
+
+
+================================================
+20. DATABASE
+================================================
+
+Preserve existing Room database architecture if sound.
+
+Ensure the following concepts exist:
+
+PATIENT
+
+CASE
+
+CAPTURE
+
+SHADE_ANALYSIS
+
+FINAL_SHADE
+
+LAB_ORDER
+
+SHADE_REFERENCE
+
+CALIBRATION_PROFILE
+
+Do not delete existing useful fields.
+
+Add migrations correctly.
+
+Never destroy user data during schema upgrades.
+
+
+================================================
+21. ALGORITHM RESULT VS DENTIST RESULT
+================================================
+
+These must remain separate.
+
+Store:
+
+algorithmRecommendedShade
+
+and:
+
+dentistSelectedShade
+
+If dentist overrides:
+
+store:
+
+overrideReason
+
+The original algorithm result must never be overwritten.
+
+
+================================================
+22. PDF REPORT
+================================================
+
+The PDF should contain:
+
+DENTAL SHADE REPORT
+
+Case ID
+Date
+Dentist
+Clinic
+Patient
+Tooth
+Restoration
+Shade system
+Algorithm recommendation
+Dentist final shade
+Top candidates
+ΔE00 values
+Measurement quality
+Capture quality
+Clinical photo
+Optional cervical/middle/incisal values
+Algorithm version
+Calibration profile
+Capture device
+
+Footer:
+
+"Digital shade-assistance information only. Final clinical shade selection remains the responsibility of the dentist."
+
+
+================================================
+23. PRIVACY
+================================================
+
+Patient photos and clinical information must be handled securely.
+
+Prefer offline/local processing for MVP.
+
+Do not upload clinical images to external AI services by default.
+
+Do not put:
+
+- patient name
+- patient ID
+- clinical photograph
+- clinical shade data
+
+into ordinary debug logs.
+
+Provide explicit delete functionality.
+
+Export/share must require explicit user action.
+
+
+================================================
+24. iOS REQUIREMENT
+================================================
+
+The existing ZIP appears to be Android-focused.
+
+Do NOT pretend that iOS support exists if it does not.
+
+First determine whether the current architecture can support:
+
+Flutter shared layer
++
+native Android camera
++
+native iOS camera
+
+If the current project is Android-only, document this clearly.
+
+Do not blindly convert the Android project to iOS.
+
+Create an architecture that allows the iOS implementation to be added cleanly.
+
+If the repository is currently not configured for Flutter/iOS, do not break the working Android project just to add empty iOS folders.
+
+Instead:
+
+1. stabilize Android architecture
+2. create platform abstraction/interfaces
+3. prepare shared business logic
+4. then implement iOS camera module in a controlled phase.
+
+
+================================================
+25. PROJECT BUILD FIX
+================================================
+
+Inspect the ZIP for missing root Android build infrastructure.
+
+Check for:
+
+- settings.gradle/settings.gradle.kts
+- root build.gradle/build.gradle.kts
+- gradle.properties
+- gradle wrapper
+- gradlew
+- gradlew.bat
+- version catalogs
+- AndroidManifest
+- module build configuration
+
+Make the project reproducibly buildable in Android Studio/Gradle.
+
+Do not guess dependency versions.
+
+Use versions compatible with the existing source code and installed toolchain.
+
+After changes:
+
+run the appropriate Gradle build/tests.
+
+
+================================================
+26. TESTING
+================================================
+
+Do not proceed without tests.
+
+Required tests:
+
+COLOR:
+
+- RGB → XYZ
+- XYZ → Lab
+- CIEDE2000
+- shade ranking
+
+
+CALIBRATION:
+
+VALIDATED
+→ allowed
+
+UNVALIDATED
+→ blocked
+
+UNSUPPORTED
+→ blocked
+
+EXPIRED
+→ blocked
+
+GENERIC_UNCALIBRATED
+→ blocked
+
+
+IMAGE QUALITY:
+
+blur
+→ fail
+
+overexposure
+→ fail
+
+underexposure
+→ fail
+
+heavy glare
+→ warning/fail
+
+insufficient tooth
+→ fail
+
+valid capture
+→ pass
+
+
+DATABASE:
+
+- migrations
+- patient creation
+- case creation
+- capture storage
+- analysis storage
+- dentist override
+- PDF order
+
+
+PDF:
+
+- correct case ID
+- correct tooth
+- correct shade
+- dentist final shade
+- disclaimer
+- no fake certification language
+- no fake dentist data
+
+
+================================================
+27. SECURITY / DATA MIGRATION
+================================================
+
+Before changing Room entities:
+
+inspect current schema.
+
+Create proper migrations.
+
+Never use destructive database migration unless explicitly required and safe.
+
+Do not erase existing patient/case data.
+
+
+================================================
+28. UI REQUIREMENTS
+================================================
+
+The UI must clearly distinguish:
+
+1. Capture quality
+2. Calibration status
+3. Algorithm recommendation
+4. Dentist final selection
+
+Example:
+
+CALIBRATION:
+VALIDATED
+
+CAPTURE:
+GOOD
+
+DIGITAL SHADE:
+A2
+
+ALTERNATIVES:
+A1 — ΔE00 X.X
+A3 — ΔE00 X.X
+
+MEASUREMENT QUALITY:
+GOOD
+
+FINAL DENTIST SHADE:
+[ A2 ]
+
+Do not display fake probability percentages.
+
+
+================================================
+29. FAILURE UX
+================================================
+
+When precise analysis is blocked:
+
+DO NOT show:
+
+A2 — 95%
+
+Instead show:
+
+"Precise shade analysis unavailable."
+
+Reason:
+
+"Camera calibration for this device is not validated."
+
+Action:
+
+"Use a validated camera configuration."
+
+
+For poor image:
+
+"Image quality insufficient."
+
+Reasons:
+
+- excessive glare
+- blur
+- insufficient tooth area
+
+Action:
+
+"Retake photo"
+
+
+================================================
+30. NO FAKE VALIDATION
+================================================
+
+Never create fake:
+
+- validation dates
+- validation certificates
+- clinical study results
+- device accuracy
+- reference measurements
+- confidence values
+
+If data is unavailable:
+
+mark:
+
+REQUIRES VALIDATED DATA
+
+
+================================================
+31. DEVELOPMENT ORDER
+================================================
+
+Work in this exact order.
+
+PHASE 0
+Repository/build audit
+
+PHASE 1
+Fix scientific claims and terminology
+
+PHASE 2
+Fix calibration gate
+
+PHASE 3
+Fix reference-data architecture
+
+PHASE 4
+Stabilize color engine and tests
+
+PHASE 5
+Improve camera metadata/capture
+
+PHASE 6
+Improve image-quality gate
+
+PHASE 7
+Improve tooth segmentation/color extraction
+
+PHASE 8
+Stabilize Room database/migrations
+
+PHASE 9
+Fix and validate PDF generation
+
+PHASE 10
+Platform abstraction for iOS
+
+PHASE 11
+iOS camera implementation
+
+PHASE 12
+Cross-device validation infrastructure
+
+PHASE 13
+Final integration testing
+
+
+================================================
+32. DO NOT DO THESE THINGS
+================================================
+
+DO NOT:
+
+- start from scratch
+- delete working code unnecessarily
+- replace CIEDE2000 with a black-box AI model
+- invent VITA reference values
+- claim calibration without evidence
+- allow generic calibration to produce precise shade
+- hard-code fake dentist information
+- claim clinical validation
+- claim spectrophotometer equivalence
+- mix VITA shade systems
+- silently support unsupported devices
+- silently upload patient photos
+- destroy database data
+- remove existing tests
+- bypass failing tests
+
+
+================================================
+33. AGENT WORKFLOW
+================================================
+
+For each phase:
+
+STEP 1
+Inspect existing code.
+
+STEP 2
+Explain what currently exists.
+
+STEP 3
+Identify exact files that need modification.
+
+STEP 4
+Implement the smallest safe change.
+
+STEP 5
+Run tests/build.
+
+STEP 6
+Fix failures.
+
+STEP 7
+Report results.
+
+STEP 8
+Only then continue.
+
+
+================================================
+34. REQUIRED REPORT AFTER EVERY PHASE
+================================================
+
+Use exactly this structure:
+
+PHASE:
+<phase name>
+
+CURRENT STATE:
+<what existed>
+
+CHANGES:
+<what was changed>
+
+FILES CHANGED:
+<list>
+
+FILES ADDED:
+<list>
+
+FILES REMOVED:
+<list or NONE>
+
+TESTS ADDED:
+<list>
+
+TEST COMMANDS:
+<commands>
+
+TEST RESULTS:
+<results>
+
+BUILD RESULT:
+<PASS/FAIL>
+
+SCIENTIFIC IMPACT:
+<explain>
+
+KNOWN LIMITATIONS:
+<list>
+
+NEXT PHASE:
+<next phase>
+
+
+================================================
+35. FIRST ACTION — DO THIS NOW
+================================================
+
+Do NOT immediately write code.
+
+First inspect the complete repository.
+
+Then report:
+
+1. Current framework
+2. Current build system
+3. Current module structure
+4. Camera implementation
+5. Color-engine implementation
+6. VITA reference implementation
+7. Calibration implementation
+8. Tooth segmentation implementation
+9. Image-quality implementation
+10. Room/database implementation
+11. PDF implementation
+12. Existing tests
+13. Missing Android build files
+14. Missing iOS architecture
+15. Scientific/clinical claims that must be corrected
+16. Security/privacy concerns
+17. Exact recommended implementation order
+
+
+================================================
+36. AFTER AUDIT
+================================================
+
+Once the audit is complete:
+
+DO NOT ask me whether to continue.
+
+Start with PHASE 0 and PHASE 1.
+
+Then:
+
+PHASE 2 — calibration gate.
+
+Then continue sequentially.
+
+Do not skip tests.
+
+
+================================================
+37. FINAL SUCCESS CONDITION
+================================================
+
+The project is considered ready for the next development stage only when:
+
+- Android builds successfully
+- tests pass
+- generic/unvalidated calibration cannot produce precise analysis
+- unsupported devices are handled safely
+- reference data has explicit provenance/status
+- no false certification claims remain
+- no fake dentist data remains
+- PDF wording is scientifically accurate
+- algorithm and dentist result are separate
+- database migrations are safe
+- camera metadata is captured
+- image quality gate works
+- CIELAB/CIEDE2000 tests pass
+- VITA Classical A1–D4 architecture is correct
+- iOS architecture is prepared without breaking Android
+
+Remember:
+
+THIS IS A DENTAL SHADE-ASSISTANCE APPLICATION.
+
+Accuracy must come from:
+
+CONTROLLED CAPTURE
++
+VALIDATED CALIBRATION
++
+VALIDATED REFERENCE DATA
++
+TOOTH SEGMENTATION
++
+COLOR SCIENCE
++
+CIEDE2000
++
+DENTIST REVIEW
+
+NOT FROM A BLACK-BOX SHADE GUESSER.
+
+
+================================================
+BEGIN
+================================================
+
+Inspect the repository now.
+
+Do not modify files until the initial audit is complete.
+
+Then begin PHASE 0.
