@@ -2,6 +2,7 @@ package com.example.viewmodel
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +37,7 @@ data class DentalUiState(
     val finalShade: FinalShadeEntity? = null,
     val currentCapturedBitmap: Bitmap? = null,
     val latestGeneratedPdf: File? = null,
+    val savedPdfDownloadPath: String? = null,
     val isLoading: Boolean = false,
     val userNotice: String? = null,
     val errorMessage: String? = null
@@ -122,15 +124,33 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
                         incisalLab = incisalLab
                     )
                 }
-            }
 
-            _uiState.value = _uiState.value.copy(
-                activeCapture = capture,
-                activeAnalysis = analysis,
-                comprehensiveReport = report,
-                finalShade = finalShade,
-                isLoading = false
-            )
+                // Load existing photo bitmap if available on disk
+                var loadedBitmap: Bitmap? = _uiState.value.currentCapturedBitmap
+                if (loadedBitmap == null && capture.imagePath.isNotBlank()) {
+                    val imgFile = File(capture.imagePath)
+                    if (imgFile.exists()) {
+                        loadedBitmap = BitmapFactory.decodeFile(imgFile.absolutePath)
+                    }
+                }
+
+                _uiState.value = _uiState.value.copy(
+                    activeCapture = capture,
+                    activeAnalysis = analysis,
+                    comprehensiveReport = report,
+                    finalShade = finalShade,
+                    currentCapturedBitmap = loadedBitmap,
+                    isLoading = false
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    activeCapture = null,
+                    activeAnalysis = null,
+                    comprehensiveReport = null,
+                    finalShade = finalShade,
+                    isLoading = false
+                )
+            }
         }
     }
 
@@ -329,6 +349,15 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
 
         val calibProfile = _uiState.value.deviceValidation?.profile ?: CalibrationRegistry.GENERIC_PROFILE
 
+        // Ensure clinical photo is available
+        var photoBitmap = _uiState.value.currentCapturedBitmap
+        if (photoBitmap == null && _uiState.value.activeCapture?.imagePath?.isNotBlank() == true) {
+            val imgFile = File(_uiState.value.activeCapture!!.imagePath)
+            if (imgFile.exists()) {
+                photoBitmap = BitmapFactory.decodeFile(imgFile.absolutePath)
+            }
+        }
+
         val reportData = LabReportData(
             patient = currentPatient,
             dentalCase = currentCase,
@@ -347,7 +376,7 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
             cameraId = "Back Sensor (Calibrated)",
             calibrationProfileId = calibProfile.id,
             algorithmVersion = report.algorithmVersion,
-            clinicalPhoto = _uiState.value.currentCapturedBitmap
+            clinicalPhoto = photoBitmap
         )
 
         val file = LabReportPdfGenerator.generatePdfReport(context, reportData)
@@ -362,13 +391,36 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
         }
         _uiState.value = _uiState.value.copy(
             latestGeneratedPdf = file,
+            currentCapturedBitmap = photoBitmap ?: _uiState.value.currentCapturedBitmap,
             userNotice = "Laboratory PDF generated: ${file.name}"
         )
         return file
     }
 
+    /**
+     * Saves the latest PDF report directly to the device's public Downloads folder.
+     */
+    fun savePdfToDownloads(context: Context): String? {
+        val pdfFile = _uiState.value.latestGeneratedPdf ?: generateLabPdf(context)
+        if (pdfFile == null || !pdfFile.exists()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Could not generate PDF to save.")
+            return null
+        }
+
+        val savedPath = LabReportPdfGenerator.savePdfToPublicDownloads(context, pdfFile)
+        if (savedPath != null) {
+            _uiState.value = _uiState.value.copy(
+                savedPdfDownloadPath = savedPath,
+                userNotice = "PDF successfully saved to: $savedPath"
+            )
+        } else {
+            _uiState.value = _uiState.value.copy(errorMessage = "Could not save PDF to Downloads directory.")
+        }
+        return savedPath
+    }
+
     fun clearNotice() {
-        _uiState.value = _uiState.value.copy(userNotice = null, errorMessage = null)
+        _uiState.value = _uiState.value.copy(userNotice = null, errorMessage = null, savedPdfDownloadPath = null)
     }
 
     private fun saveBitmapToLocalFiles(context: Context, bitmap: Bitmap, caseId: Long): File {

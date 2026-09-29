@@ -2,7 +2,10 @@ package com.example.ui.screens
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,12 +16,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.example.colorengine.ColorConversions
 import com.example.viewmodel.DentalUiState
 import java.io.File
 
@@ -26,6 +33,7 @@ import java.io.File
 fun LabOrderScreen(
     uiState: DentalUiState,
     onRegeneratePdf: () -> Unit,
+    onSavePdfToDownloads: () -> Unit,
     onNavigateBackToResults: () -> Unit
 ) {
     val context = LocalContext.current
@@ -54,12 +62,12 @@ fun LabOrderScreen(
         ) {
             Column {
                 Text(
-                    text = "Laboratory Prescription",
+                    text = "Laboratory Prescription & Report",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Exportable ShadeReport PDF for Dental Lab",
+                    text = "VITA Classical Shade Certification PDF for Dental Lab",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -67,6 +75,42 @@ fun LabOrderScreen(
 
             IconButton(onClick = onNavigateBackToResults) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back to Results")
+            }
+        }
+
+        // Saved to Downloads Confirmation Banner
+        if (uiState.savedPdfDownloadPath != null) {
+            Surface(
+                color = Color(0xFFD1FAE5), // Mint Green
+                shape = RoundedCornerShape(10.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF10B981)),
+                modifier = Modifier.fillMaxWidth().testTag("saved_pdf_banner")
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF047857),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "PDF Saved to Device Storage",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color(0xFF065F46)
+                        )
+                        Text(
+                            text = uiState.savedPdfDownloadPath,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF047857)
+                        )
+                    }
+                }
             }
         }
 
@@ -83,10 +127,10 @@ fun LabOrderScreen(
                 Surface(
                     color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(52.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+                        Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
                     }
                 }
 
@@ -94,16 +138,16 @@ fun LabOrderScreen(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = pdfFile?.name ?: "ShadeReport_Pending.pdf",
+                        text = pdfFile?.name ?: "ShadeReport_CS-${activeCase?.id ?: 1}_Pending.pdf",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = if (pdfFile != null && pdfFile.exists()) {
-                            "Ready to share • ${(pdfFile.length() / 1024)} KB"
+                            "Generated & Ready • ${(pdfFile.length() / 1024)} KB"
                         } else {
-                            "PDF ready for generation"
+                            "PDF ready for generation and export"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -112,7 +156,7 @@ fun LabOrderScreen(
             }
         }
 
-        // Prescription Summary Card
+        // Prescription Summary Card (with Tooth Image & Measured L*a*b*)
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -120,13 +164,103 @@ fun LabOrderScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Prescription Details",
+                    text = "Prescription & Colorimetric Summary",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                PrescriptionRow("Patient", "${patient?.name ?: "N/A"} (${patient?.patientCode ?: ""})")
+                // Tooth Photo and Measured Values Preview Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Tooth Photo Thumbnail
+                    if (uiState.currentCapturedBitmap != null) {
+                        Image(
+                            bitmap = uiState.currentCapturedBitmap.asImageBitmap(),
+                            contentDescription = "Captured Tooth",
+                            modifier = Modifier
+                                .size(76.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (report != null) {
+                        // Fallback enamel color chip
+                        val rgb = ColorConversions.labToRgb(report.overallLab)
+                        Box(
+                            modifier = Modifier
+                                .size(76.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(rgb.first, rgb.second, rgb.third))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Enamel\nColor",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+
+                    // Key Shade Data
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Closest VITA:",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = report?.recommendedShade?.shadeCode ?: dentistShade,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                            Text(
+                                text = "ΔE %.2f".format(report?.recommendedShade?.deltaE00 ?: 0.0),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        if (report != null) {
+                            Text(
+                                text = "Measured L*a*b*: L* %.1f, a* %.1f, b* %.1f".format(
+                                    report.overallLab.l, report.overallLab.a, report.overallLab.b
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Text(
+                            text = "Patient: ${patient?.name ?: "N/A"} • Tooth #${activeCase?.toothNumber ?: "N/A"}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
                 PrescriptionRow("Case Number", "CS-${activeCase?.id ?: "N/A"}")
                 PrescriptionRow("Tooth Number", activeCase?.toothNumber ?: "N/A")
                 PrescriptionRow("Restoration Type", activeCase?.restorationType ?: "N/A")
@@ -144,7 +278,18 @@ fun LabOrderScreen(
             }
         }
 
-        // Action Buttons Row
+        // Primary Action: Save PDF to Downloads
+        Button(
+            onClick = onSavePdfToDownloads,
+            modifier = Modifier.fillMaxWidth().height(50.dp).testTag("save_pdf_downloads_button"),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D5C75)) // Deep Dental Teal
+        ) {
+            Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Save PDF Lab Report to Device Storage", fontWeight = FontWeight.Bold)
+        }
+
+        // Secondary Action Buttons Row (View & Share)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)

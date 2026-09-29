@@ -37,7 +37,8 @@ import kotlin.math.*
 enum class ComparisonDisplayMode {
     SIDE_BY_SIDE,
     SPLIT_BISECTED,
-    ZONE_STRATIFIED
+    ZONE_STRATIFIED,
+    COLOR_SPACE_2D
 }
 
 @Composable
@@ -135,23 +136,30 @@ fun ShadeComparisonCard(
                 SegmentedButton(
                     selected = displayMode == ComparisonDisplayMode.SIDE_BY_SIDE,
                     onClick = { displayMode = ComparisonDisplayMode.SIDE_BY_SIDE },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3)
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4)
                 ) {
                     Text("Side-by-Side", style = MaterialTheme.typography.labelSmall)
                 }
                 SegmentedButton(
                     selected = displayMode == ComparisonDisplayMode.SPLIT_BISECTED,
                     onClick = { displayMode = ComparisonDisplayMode.SPLIT_BISECTED },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3)
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4)
                 ) {
-                    Text("Split Tooth", style = MaterialTheme.typography.labelSmall)
+                    Text("Split", style = MaterialTheme.typography.labelSmall)
                 }
                 SegmentedButton(
                     selected = displayMode == ComparisonDisplayMode.ZONE_STRATIFIED,
                     onClick = { displayMode = ComparisonDisplayMode.ZONE_STRATIFIED },
-                    shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3)
+                    shape = SegmentedButtonDefaults.itemShape(index = 2, count = 4)
                 ) {
                     Text("Zones", style = MaterialTheme.typography.labelSmall)
+                }
+                SegmentedButton(
+                    selected = displayMode == ComparisonDisplayMode.COLOR_SPACE_2D,
+                    onClick = { displayMode = ComparisonDisplayMode.COLOR_SPACE_2D },
+                    shape = SegmentedButtonDefaults.itemShape(index = 3, count = 4)
+                ) {
+                    Text("2D Plane", style = MaterialTheme.typography.labelSmall)
                 }
             }
 
@@ -182,6 +190,13 @@ fun ShadeComparisonCard(
                         middleLab = middleLab,
                         incisalLab = incisalLab,
                         referenceRef = activeRef
+                    )
+                }
+                ComparisonDisplayMode.COLOR_SPACE_2D -> {
+                    ColorSpacePlaneCanvas(
+                        scannedLab = scannedLab,
+                        targetShade = activeRef.shadeCode,
+                        onSelectShade = { selectedReferenceCode = it }
                     )
                 }
             }
