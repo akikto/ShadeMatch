@@ -160,6 +160,7 @@ fun DentalApp(viewModel: DentalViewModel) {
                         onConfirmShade = { viewModel.confirmAlgorithmShade() },
                         onOverrideShade = { shade, reason -> viewModel.overrideShade(shade, reason) },
                         onGenerateLabPdf = { viewModel.generateLabPdf(context) },
+                        onSavePdfToDownloads = { viewModel.savePdfToDownloads(context) },
                         onNavigateToLab = { currentTab = DentalNavTab.LAB_ORDER },
                         onNavigateBackToCapture = { currentTab = DentalNavTab.CAPTURE }
                     )
@@ -168,6 +169,7 @@ fun DentalApp(viewModel: DentalViewModel) {
                     LabOrderScreen(
                         uiState = uiState,
                         onRegeneratePdf = { viewModel.generateLabPdf(context) },
+                        onSavePdfToDownloads = { viewModel.savePdfToDownloads(context) },
                         onNavigateBackToResults = { currentTab = DentalNavTab.RESULTS }
                     )
                 }

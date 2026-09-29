@@ -23,6 +23,7 @@ import com.example.colorengine.ColorConversions
 import com.example.colorengine.Lab
 import com.example.colorengine.ShadeMatchResult
 import com.example.colorengine.VitaClassicalData
+import com.example.ui.components.ColorSpacePlaneCanvas
 import com.example.ui.components.ShadeComparisonCard
 import com.example.viewmodel.DentalUiState
 
@@ -32,6 +33,7 @@ fun ResultsScreen(
     onConfirmShade: () -> Unit,
     onOverrideShade: (String, String) -> Unit,
     onGenerateLabPdf: () -> Unit,
+    onSavePdfToDownloads: () -> Unit,
     onNavigateToLab: () -> Unit,
     onNavigateBackToCapture: () -> Unit
 ) {
@@ -235,6 +237,12 @@ fun ResultsScreen(
             incisalLab = report.zones?.incisal?.lab
         )
 
+        // 2D CIELAB Color Space Plane Confirmation (Interactive Canvas Plot)
+        ColorSpacePlaneCanvas(
+            scannedLab = report.overallLab,
+            targetShade = finalShade?.dentistSelectedShade ?: primary.shadeCode
+        )
+
         // Top 2nd & 3rd Alternative Candidates Card (Section 20)
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -409,6 +417,21 @@ fun ResultsScreen(
                     Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Generate Laboratory Order PDF")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        onSavePdfToDownloads()
+                        onNavigateToLab()
+                    },
+                    modifier = Modifier.fillMaxWidth().testTag("save_lab_pdf_button"),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D5C75))
+                ) {
+                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Save PDF Lab Report to Device Storage")
                 }
             }
         }
