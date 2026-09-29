@@ -50,7 +50,6 @@ abstract class DentalShadeDatabase : RoomDatabase() {
                     "dental_shade_matching.db"
                 )
                     .addCallback(DatabaseCallback())
-                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
@@ -104,13 +103,13 @@ abstract class DentalShadeDatabase : RoomDatabase() {
                     referenceTarget = CalibrationRegistry.GENERIC_PROFILE.referenceTarget,
                     notes = CalibrationRegistry.GENERIC_PROFILE.notes
                 )
-            ) + CalibrationRegistry.VALIDATED_PROFILES.map { profile ->
+            ) + CalibrationRegistry.CANDIDATE_PROFILES.map { profile ->
                 CalibrationProfileEntity(
                     id = profile.id,
                     deviceModel = profile.deviceModel,
                     cameraId = profile.cameraId,
                     hardwareSetup = profile.hardwareSetup,
-                    matrixJson = "Calibrated_Matrix_${profile.deviceModel}",
+                    matrixJson = "UNVERIFIED_MATRIX_${profile.deviceModel}",
                     whitePointJson = "D65_2deg",
                     algorithmVersion = profile.algorithmVersion,
                     validated = profile.validated,
@@ -121,23 +120,6 @@ abstract class DentalShadeDatabase : RoomDatabase() {
             }
             database.calibrationProfileDao().insertAll(calibProfiles)
 
-            // Seed sample patient and initial case to give immediate clinical utility
-            val samplePatientId = database.patientDao().insertPatient(
-                PatientEntity(
-                    patientCode = "PT-8021",
-                    name = "Eleanor Vance",
-                    notes = "Upper anterior aesthetic veneer consultation."
-                )
-            )
-            database.dentalCaseDao().insertCase(
-                DentalCaseEntity(
-                    patientId = samplePatientId,
-                    toothNumber = "11 (Maxillary Right Central)",
-                    restorationType = "Ceramic Veneer",
-                    shadeSystem = "VITA_CLASSICAL",
-                    status = "NEW"
-                )
-            )
         }
     }
 }

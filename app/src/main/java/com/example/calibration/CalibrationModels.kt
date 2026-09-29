@@ -53,7 +53,7 @@ object CalibrationRegistry {
     )
 
     // Historical candidate configurations only. No evidence of validation is bundled.
-    val VALIDATED_PROFILES: List<CalibrationProfile> = listOf(
+    val CANDIDATE_PROFILES: List<CalibrationProfile> = listOf(
         CalibrationProfile(
             id = "CALIB_PIXEL_8_STD",
             deviceModel = "Pixel 8",
@@ -89,7 +89,7 @@ object CalibrationRegistry {
     )
 
     fun evaluateDevice(currentModel: String, cameraId: String? = null): DeviceValidationResult {
-        val matchedProfile = VALIDATED_PROFILES.find {
+        val matchedProfile = CANDIDATE_PROFILES.find {
             currentModel.equals(it.deviceModel, ignoreCase = true) &&
                 cameraId != null && cameraId == it.cameraId
         }

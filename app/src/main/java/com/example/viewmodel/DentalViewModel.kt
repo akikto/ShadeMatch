@@ -217,6 +217,20 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
                     bitmap = bitmap,
                     toothPixelCount = segResult.totalToothPixels
                 )
+                if (!quality.canProceed) {
+                    withContext(Dispatchers.Main) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            comprehensiveReport = null,
+                            activeAnalysis = null,
+                            finalShade = null,
+                            qualityEvaluation = quality,
+                            segmentationResult = segResult,
+                            errorMessage = "Image quality failed: ${quality.issues.filter { it.severity == QualityStatus.FAIL }.joinToString("; ") { it.message }}. Please recapture."
+                        )
+                    }
+                    return@launch
+                }
 
                 // 3. Robust Color Extraction
                 val overallStats = RobustColorExtractor.extractRobustLab(segResult.toothLabPixels)
@@ -335,6 +349,10 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
     fun overrideShade(overrideShadeCode: String, reason: String) {
         val currentCase = _uiState.value.activeCase ?: return
         val report = _uiState.value.comprehensiveReport ?: return
+        if (!VitaClassicalData.isValidShadeCode(overrideShadeCode) || reason.isBlank()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Select a VITA Classical shade and enter an override reason.")
+            return
+        }
 
         viewModelScope.launch {
             repository.saveFinalShade(
@@ -360,10 +378,12 @@ class DentalViewModel(private val repository: DentalRepository) : ViewModel() {
         val currentCase = _uiState.value.activeCase ?: return null
         val currentPatient = _uiState.value.selectedPatient ?: return null
         val report = _uiState.value.comprehensiveReport ?: return null
-        val finalShade = _uiState.value.finalShade
-
-        val dentistShade = finalShade?.dentistSelectedShade ?: report.recommendedShade.shadeCode
-        val overrideReason = finalShade?.overrideReason
+        val finalShade = _uiState.value.finalShade ?: run {
+            _uiState.value = _uiState.value.copy(errorMessage = "A dentist must confirm the final shade before generating a report.")
+            return null
+        }
+        val dentistShade = finalShade.dentistSelectedShade
+        val overrideReason = finalShade.overrideReason
 
         val calibProfile = _uiState.value.deviceValidation?.profile ?: CalibrationRegistry.GENERIC_PROFILE
 
