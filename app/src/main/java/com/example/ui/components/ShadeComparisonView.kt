@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
@@ -826,6 +827,13 @@ fun FullScreenComparisonDialog(
                 ) {
                     Box(modifier = Modifier.fillMaxSize().padding(14.dp), contentAlignment = Alignment.Center) {
                         when (activeMode) {
+                            ComparisonDisplayMode.COLOR_SPACE_2D -> {
+                                ColorSpacePlaneCanvas(
+                                    scannedLab = scannedLab,
+                                    targetShade = activeRef.shadeCode,
+                                    onSelectShade = { selectedShade = it }
+                                )
+                            }
                             ComparisonDisplayMode.SIDE_BY_SIDE -> {
                                 SideBySideView(
                                     scannedLab = scannedLab,

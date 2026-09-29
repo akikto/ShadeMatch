@@ -1,0 +1,1 @@
+- [Android Gradle toolchains](android-gradle-toolchains.md) — Android 36 Robolectric needs JDK 21; Nix JDK 17 may not be discovered as a second Gradle toolchain.
